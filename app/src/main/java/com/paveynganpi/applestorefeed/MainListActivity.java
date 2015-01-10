@@ -18,6 +18,9 @@ import android.widget.Toast;
 import org.apache.http.HttpConnection;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -29,7 +32,7 @@ public class MainListActivity extends ActionBarActivity {
     protected ListView mListView;//reference a listView
     protected String[] mAppleFeedTitle;
     protected static final String TAG = MainListActivity.class.getSimpleName();
-    protected static final int NUMBER_OF_POSTS = 15; // the top 15 posts of the news feed
+    protected static final int NUMBER_OF_POSTS = 20; // the top 15 posts of the news feed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +74,41 @@ public class MainListActivity extends ActionBarActivity {
             int responseCode = -1;
 
             try {
-                URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/count=" + NUMBER_OF_POSTS);
+                URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
                 HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
                 connection.connect();
 
 
                 responseCode = connection.getResponseCode();
-                Log.i(TAG,"Code: "+ responseCode);
 
+                //if responsecode is 200
+                if(responseCode == HttpURLConnection.HTTP_OK){
+                    //success
+                    //create inputstream to get data from url in bytes
+                    InputStream inputStream = connection.getInputStream();
+
+                    //create a reader to read the data in the input stream
+                    Reader reader = new InputStreamReader(inputStream);
+                   int contentLength = connection.getContentLength();//get the length of the data. /// bugy with this url
+                   // int contentLength = 10000;
+                    Log.d(TAG,"content length "+contentLength);
+                   // int contentLength = 9000000;
+                    //create a char array to store the data in it
+                    char[] charArray = new char[contentLength];
+                    int[] now = new int[contentLength];
+
+                    //store the data into the charArray
+                    reader.read(charArray);
+
+                    String responseData = new String(charArray);
+                    //String responseData = charArray.toString();//convert the charArray to String
+                    Log.v(TAG,responseData);
+
+
+                }
+                else {
+                    Log.i(TAG, "Unsuccessfull HTTP response Code: " + responseCode);
+                }
             } catch (IOException | NetworkOnMainThreadException e){
                 Log.e(TAG,"Exception caught",e);
 
