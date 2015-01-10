@@ -1,45 +1,56 @@
 package com.paveynganpi.applestorefeed;
 
+import android.os.NetworkOnMainThreadException;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.apache.http.HttpConnection;
+
+import java.io.IOException;
 import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 
 public class MainListActivity extends ActionBarActivity {
 
     protected ListView mListView;//reference a listView
-    protected String[] mFootballTeams = {
-
-            "Chelsea Fc",
-            "Real Madrid Fc",
-            "Arsenal Fc",
-            "Manchester United",
-            "Liverpool Fc",
-            "Barcelona Fc",
-            "Athletico de Madrid",
-            "Sevilla Fc",
-            "Totenham United",
-            "Paris Saint Germain",
-            "As Monaco",
-            "Southampton",
-            "Ajax",
-            "Mancester City"
-
-    };
+    protected String[] mAppleFeedTitle;
+    protected static final String TAG = MainListActivity.class.getSimpleName();
+    protected static final int NUMBER_OF_POSTS = 15; // the top 15 posts of the news feed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_list);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,mFootballTeams);
-        getListView().setAdapter(adapter);
+        try {
+            URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
+            HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
+            connection.connect();
+
+            int responseCode = connection.getResponseCode();
+            Log.i(TAG,"Code: "+ responseCode);
+
+        } catch (MalformedURLException e) {
+
+            Log.e(TAG,"Exception caught",e);
+        }
+        catch (IOException e){
+            Log.e(TAG,"Exception caught",e);
+
+        }
+        catch (NetworkOnMainThreadException e){
+            Log.e(TAG,"Exception caught",e);
+        }
+
 
     }
 
