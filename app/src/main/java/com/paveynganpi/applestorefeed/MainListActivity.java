@@ -1,5 +1,6 @@
 package com.paveynganpi.applestorefeed;
 
+import android.os.AsyncTask;
 import android.os.NetworkOnMainThreadException;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -31,29 +32,35 @@ public class MainListActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_list);
 
-        try {
-            URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
-            HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
-            connection.connect();
-
-            int responseCode = connection.getResponseCode();
-            Log.i(TAG,"Code: "+ responseCode);
-
-        } catch (MalformedURLException e) {
-
-            Log.e(TAG,"Exception caught",e);
-        }
-        catch (IOException e){
-            Log.e(TAG,"Exception caught",e);
-
-        }
-        catch (NetworkOnMainThreadException e){
-            Log.e(TAG,"Exception caught",e);
-        }
+        GetAppleFeedTasks getAppleFeedTasks = new GetAppleFeedTasks();
+        getAppleFeedTasks.execute();
 
 
     }
 
+    //class to run in background as we connect to apple feed url
+    private class GetAppleFeedTasks extends AsyncTask<Object,Void,String>{
+
+        @Override
+        protected String doInBackground(Object[] params) {
+            int responseCode = -1;
+
+            try {
+                URL appleFeedUrl = new URL("https://itunes.apple.com/us/rss/topaudiobooks/limit=10/xml");
+                HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
+                connection.connect();
+
+                responseCode = connection.getResponseCode();
+                Log.i(TAG,"Code: "+ responseCode);
+
+            } catch (IOException | NetworkOnMainThreadException e){
+                Log.e(TAG,"Exception caught",e);
+
+            }
+
+            return "Code: "+responseCode;
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -61,6 +68,8 @@ public class MainListActivity extends ActionBarActivity {
         getMenuInflater().inflate(R.menu.menu_main_list, menu);
         return true;
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
