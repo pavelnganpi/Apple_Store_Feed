@@ -1,5 +1,8 @@
 package com.paveynganpi.applestorefeed;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.NetworkOnMainThreadException;
 import android.support.v7.app.ActionBarActivity;
@@ -10,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpConnection;
 
@@ -32,9 +36,30 @@ public class MainListActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_list);
 
-        GetAppleFeedTasks getAppleFeedTasks = new GetAppleFeedTasks();
-        getAppleFeedTasks.execute();
+        //if device is connected to a network, connect to the appleFeedUrl
+        if(isAvailableNetwork()) {
+            GetAppleFeedTasks getAppleFeedTasks = new GetAppleFeedTasks();
+            getAppleFeedTasks.execute();
+        }
+        else{
+            //no network available
+            Toast.makeText(this,"Network is Unavailable",Toast.LENGTH_LONG).show();
+        }
 
+
+    }
+
+    //checks is device is connected to a network
+    private boolean isAvailableNetwork() {
+
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+
+        boolean isAvailable = false;
+        if(networkInfo!=null && networkInfo.isConnected() ){
+            isAvailable = true;
+        }
+        return isAvailable;
 
     }
 
@@ -46,9 +71,10 @@ public class MainListActivity extends ActionBarActivity {
             int responseCode = -1;
 
             try {
-                URL appleFeedUrl = new URL("https://itunes.apple.com/us/rss/topaudiobooks/limit=10/xml");
+                URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/count=" + NUMBER_OF_POSTS);
                 HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
                 connection.connect();
+
 
                 responseCode = connection.getResponseCode();
                 Log.i(TAG,"Code: "+ responseCode);
