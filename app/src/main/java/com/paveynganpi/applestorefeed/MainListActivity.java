@@ -4,14 +4,43 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.lang.reflect.Array;
 
 
 public class MainListActivity extends ActionBarActivity {
+
+    protected ListView mListView;//reference a listView
+    protected String[] mFootballTeams = {
+
+            "Chelsea Fc",
+            "Real Madrid Fc",
+            "Arsenal Fc",
+            "Manchester United",
+            "Liverpool Fc",
+            "Barcelona Fc",
+            "Athletico de Madrid",
+            "Sevilla Fc",
+            "Totenham United",
+            "Paris Saint Germain",
+            "As Monaco",
+            "Southampton",
+            "Ajax",
+            "Mancester City"
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_list);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,mFootballTeams);
+        getListView().setAdapter(adapter);
+
     }
 
 
@@ -36,4 +65,17 @@ public class MainListActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //gets an instance of the listview, returns a list view which is used to be able to call
+    protected ListView getListView() {
+        if (mListView == null) {
+            mListView = (ListView) findViewById(android.R.id.list);
+        }
+        //set the listview to be empty if no data is present
+        TextView emptyText = (TextView)findViewById(android.R.id.empty);//
+        mListView.setEmptyView(emptyText);
+
+        return mListView;
+    }
+
 }
