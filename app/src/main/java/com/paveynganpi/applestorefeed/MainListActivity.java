@@ -16,6 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpConnection;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,18 +94,30 @@ public class MainListActivity extends ActionBarActivity {
                     Reader reader = new InputStreamReader(inputStream);
                    int contentLength = connection.getContentLength();//get the length of the data. /// bugy with this url
                    // int contentLength = 10000;
-                    Log.d(TAG,"content length "+contentLength);
+                   // Log.d(TAG,"content length "+contentLength);
                    // int contentLength = 9000000;
                     //create a char array to store the data in it
                     char[] charArray = new char[contentLength];
-                    int[] now = new int[contentLength];
 
                     //store the data into the charArray
                     reader.read(charArray);
 
                     String responseData = new String(charArray);
-                    //String responseData = charArray.toString();//convert the charArray to String
-                    Log.v(TAG,responseData);
+
+                    //create a JSON object
+                    JSONObject jsonResponse = new JSONObject(responseData);
+                    String status = jsonResponse.getString("status");
+                    Log.d(TAG,status);
+
+                    JSONArray jsonPosts = jsonResponse.getJSONArray("posts");
+                    //loop over all posts
+                    for(int i = 0 ;i< jsonPosts.length();i++){
+
+                        JSONObject jsonPost = jsonPosts.getJSONObject(i);
+                        String title = jsonPost.getString("title");
+                        Log.v(TAG,"Post " + i + ": " +title);
+
+                    }
 
 
                 }
@@ -112,6 +127,8 @@ public class MainListActivity extends ActionBarActivity {
             } catch (IOException | NetworkOnMainThreadException e){
                 Log.e(TAG,"Exception caught",e);
 
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
 
             return "Code: "+responseCode;
