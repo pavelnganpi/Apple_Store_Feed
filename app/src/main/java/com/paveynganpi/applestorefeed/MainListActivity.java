@@ -2,8 +2,10 @@ package com.paveynganpi.applestorefeed;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.NetworkOnMainThreadException;
 import android.support.v7.app.ActionBarActivity;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -84,6 +87,27 @@ public class MainListActivity extends ActionBarActivity {
             //no network available
             Toast.makeText(this,"Network is Unavailable",Toast.LENGTH_LONG).show();
         }
+
+        //when an item in listview is clicked, open a webview
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                try {
+                    JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");
+                    JSONObject jsonPost = jsonPosts.getJSONObject(position);
+                    String appleFeedUrl = jsonPost.getString("url");
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(appleFeedUrl));
+                    startActivity(intent);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
 
 
     }
