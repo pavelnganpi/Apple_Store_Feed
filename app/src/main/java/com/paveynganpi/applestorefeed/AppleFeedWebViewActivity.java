@@ -1,9 +1,12 @@
 package com.paveynganpi.applestorefeed;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebView;
 
 
 public class AppleFeedWebViewActivity extends ActionBarActivity {
@@ -12,6 +15,14 @@ public class AppleFeedWebViewActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apple_feed_web_view);
+
+        //get the intent from MainListActivity.java
+        Intent intent = getIntent();
+        Uri appleFeedUri = intent.getData();
+
+        WebView webView = (WebView)findViewById(R.id.webView);
+        webView.loadUrl(appleFeedUri.toString());
+
     }
 
 

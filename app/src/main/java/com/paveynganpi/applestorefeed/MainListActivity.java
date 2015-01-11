@@ -97,7 +97,8 @@ public class MainListActivity extends ActionBarActivity {
                     JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");
                     JSONObject jsonPost = jsonPosts.getJSONObject(position);
                     String appleFeedUrl = jsonPost.getString("url");
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                    Intent intent = new Intent(MainListActivity.this,AppleFeedWebViewActivity.class);
                     intent.setData(Uri.parse(appleFeedUrl));
                     startActivity(intent);
 
@@ -189,13 +190,6 @@ public class MainListActivity extends ActionBarActivity {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main_list, menu);
-        return true;
-    }
-
     //update the list on the listview
     private void handleAppleFeedResponse() {
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -209,7 +203,7 @@ public class MainListActivity extends ActionBarActivity {
         else{
 
             try {
-                JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");//get all the posts
+                JSONArray jsonPosts = mAppleFeedData.getJSONArray("entry");//get all the posts
                 //ArrayList<HashMap<String,String>> blogPosts = new ArrayList<HashMap<String,String>>();
                 ArrayList<feedData> title_author = new ArrayList<feedData>();
 
@@ -224,11 +218,7 @@ public class MainListActivity extends ActionBarActivity {
                     author = Html.fromHtml(author).toString();//convert html to strings
                     String authorPhotoUrl = post.getString(KEY_THUMBNAIL);
 
-//                    HashMap<String,String> blogPost = new HashMap<String,String>();
-//                    blogPost.put(KEY_TITLE,title);
-//                    blogPost.put(KEY_AUTHOR,author);
-//
-//                    blogPosts.add(blogPost);
+
 
                     title_author.add(new feedData(title,author,authorPhotoUrl));
                     //Log.d(TAG,"title " + title_author.get(i).getTitle() + " Author " + title_author.get(i).getAuthor());
@@ -236,12 +226,7 @@ public class MainListActivity extends ActionBarActivity {
 
                 }
 
-//                String[] keys = {KEY_TITLE,KEY_AUTHOR};
-//                int[] ids = {android.R.id.text1,android.R.id.text2};
-//                SimpleAdapter adapter = new SimpleAdapter(this,blogPosts,
-//                        android.R.layout.simple_list_item_2,keys,ids);
-//
-//                getListView().setAdapter(adapter);
+
                   FeedAdapter adapter = new FeedAdapter(this,title_author);
                   getListView().setAdapter(adapter);
 
