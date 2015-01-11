@@ -7,5 +7,6 @@
     <string name="no_items">No layouts to display</string>
     <string name="error_message">There was an error getting the data from itunes</string>
     <string name="title">Oops! Sorry</string>
+    <string name="title_activity_apple_feed_web_view">Apple Feed Store</string>
 
 </resources>
