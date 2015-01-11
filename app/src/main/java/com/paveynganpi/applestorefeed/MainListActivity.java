@@ -1,5 +1,6 @@
 package com.paveynganpi.applestorefeed;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -7,15 +8,19 @@ import android.os.AsyncTask;
 import android.os.NetworkOnMainThreadException;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.http.HttpConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,23 +29,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MainListActivity extends ActionBarActivity {
 
     protected ListView mListView;//reference a listView
-    protected String[] mAppleFeedTitle;
+
     protected static final String TAG = MainListActivity.class.getSimpleName();
     protected static final int NUMBER_OF_POSTS = 20; // the top 15 posts of the news feed
+    protected JSONObject mAppleFeedData;
+    protected ProgressBar mProgressBar;
+
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_AUTHOR = "author";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_list);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mProgressBar.setVisibility(View.VISIBLE);
 
         //if device is connected to a network, connect to the appleFeedUrl
         if(isAvailableNetwork()) {
@@ -70,11 +83,12 @@ public class MainListActivity extends ActionBarActivity {
     }
 
     //class to run in background as we connect to apple feed url
-    private class GetAppleFeedTasks extends AsyncTask<Object,Void,String>{
+    private class GetAppleFeedTasks extends AsyncTask<Object,Void,JSONObject>{
 
         @Override
-        protected String doInBackground(Object[] params) {
+        protected JSONObject doInBackground(Object[] params) {
             int responseCode = -1;
+            JSONObject jsonResponse = null;
 
             try {
                 URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
@@ -105,20 +119,7 @@ public class MainListActivity extends ActionBarActivity {
                     String responseData = new String(charArray);
 
                     //create a JSON object
-                    JSONObject jsonResponse = new JSONObject(responseData);
-                    String status = jsonResponse.getString("status");
-                    Log.d(TAG,status);
-
-                    JSONArray jsonPosts = jsonResponse.getJSONArray("posts");
-                    //loop over all posts
-                    for(int i = 0 ;i< jsonPosts.length();i++){
-
-                        JSONObject jsonPost = jsonPosts.getJSONObject(i);
-                        String title = jsonPost.getString("title");
-                        Log.v(TAG,"Post " + i + ": " +title);
-
-                    }
-
+                    jsonResponse = new JSONObject(responseData);
 
                 }
                 else {
@@ -131,8 +132,17 @@ public class MainListActivity extends ActionBarActivity {
                 e.printStackTrace();
             }
 
-            return "Code: "+responseCode;
+            return jsonResponse;
         }
+
+        @Override
+        protected void onPostExecute(JSONObject result){
+            mAppleFeedData = result;
+            handleAppleFeedResponse();
+
+        }
+
+
     }
 
     @Override
@@ -142,6 +152,67 @@ public class MainListActivity extends ActionBarActivity {
         return true;
     }
 
+    //update the list on the listview
+    private void handleAppleFeedResponse() {
+        mProgressBar.setVisibility(View.INVISIBLE);
+        if(mAppleFeedData == null){
+
+            updateDisplayForError();
+            mProgressBar.setVisibility(View.INVISIBLE);
+
+
+        }
+        else{
+
+            try {
+                JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");//get all the posts
+                ArrayList<HashMap<String,String>> blogPosts = new ArrayList<HashMap<String,String>>();
+
+                //loop over all the JSON objects in posts and get their titles
+                for(int i =0;i<jsonPosts.length();i++){
+
+                    JSONObject post = jsonPosts.getJSONObject(i);
+                    String title = post.getString(KEY_TITLE);
+                    title = Html.fromHtml(title).toString();//convert html to strings
+                    String author = post.getString(KEY_AUTHOR);
+                    author = Html.fromHtml(author).toString();//convert html to strings
+
+                    HashMap<String,String> blogPost = new HashMap<String,String>();
+                    blogPost.put(KEY_TITLE,title);
+                    blogPost.put(KEY_AUTHOR,author);
+
+                    blogPosts.add(blogPost);
+
+                }
+
+                String[] keys = {KEY_TITLE,KEY_AUTHOR};
+                int[] ids = {android.R.id.text1,android.R.id.text2};
+                SimpleAdapter adapter = new SimpleAdapter(this,blogPosts,
+                        android.R.layout.simple_list_item_2,keys,ids);
+
+                getListView().setAdapter(adapter);
+
+
+            } catch (JSONException e) {
+                Log.e(TAG,"Exception caught "+e);
+            }
+
+        }
+
+    }
+
+    private void updateDisplayForError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.error_message));
+        builder.setTitle(getString(R.string.title));
+        builder.setPositiveButton(android.R.string.ok,null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        //set the listview to be empty if no data is present
+//        TextView emptyText = (TextView) getListView().getEmptyView();//
+//        emptyText.setText(getString(R.string.no_items));
+    }
 
 
     @Override
@@ -164,9 +235,6 @@ public class MainListActivity extends ActionBarActivity {
         if (mListView == null) {
             mListView = (ListView) findViewById(android.R.id.list);
         }
-        //set the listview to be empty if no data is present
-        TextView emptyText = (TextView)findViewById(android.R.id.empty);//
-        mListView.setEmptyView(emptyText);
 
         return mListView;
     }
