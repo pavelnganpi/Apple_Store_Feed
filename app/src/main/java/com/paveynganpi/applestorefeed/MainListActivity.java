@@ -13,12 +13,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -32,7 +28,6 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class MainListActivity extends ActionBarActivity {
@@ -46,6 +41,31 @@ public class MainListActivity extends ActionBarActivity {
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_AUTHOR = "author";
+    private static final String KEY_THUMBNAIL = "thumbnail";
+
+    class feedData {
+
+        String title;
+        String author;
+        String authorThumnail;
+        public feedData(String title, String author, String thumbnail){
+
+            this.title = title;
+            this.author = author;
+            this.authorThumnail = thumbnail;
+        }
+
+        String getTitle(){
+            return  title;
+        }
+        String getAuthor(){
+            return author;
+        }
+        String getAuthorThumnail(){
+            return authorThumnail;
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,7 +186,9 @@ public class MainListActivity extends ActionBarActivity {
 
             try {
                 JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");//get all the posts
-                ArrayList<HashMap<String,String>> blogPosts = new ArrayList<HashMap<String,String>>();
+                //ArrayList<HashMap<String,String>> blogPosts = new ArrayList<HashMap<String,String>>();
+                ArrayList<feedData> title_author = new ArrayList<feedData>();
+
 
                 //loop over all the JSON objects in posts and get their titles
                 for(int i =0;i<jsonPosts.length();i++){
@@ -176,21 +198,28 @@ public class MainListActivity extends ActionBarActivity {
                     title = Html.fromHtml(title).toString();//convert html to strings
                     String author = post.getString(KEY_AUTHOR);
                     author = Html.fromHtml(author).toString();//convert html to strings
+                    String authorPhotoUrl = post.getString(KEY_THUMBNAIL);
 
-                    HashMap<String,String> blogPost = new HashMap<String,String>();
-                    blogPost.put(KEY_TITLE,title);
-                    blogPost.put(KEY_AUTHOR,author);
+//                    HashMap<String,String> blogPost = new HashMap<String,String>();
+//                    blogPost.put(KEY_TITLE,title);
+//                    blogPost.put(KEY_AUTHOR,author);
+//
+//                    blogPosts.add(blogPost);
 
-                    blogPosts.add(blogPost);
+                    title_author.add(new feedData(title,author,authorPhotoUrl));
+                    //Log.d(TAG,"title " + title_author.get(i).getTitle() + " Author " + title_author.get(i).getAuthor());
+
 
                 }
 
-                String[] keys = {KEY_TITLE,KEY_AUTHOR};
-                int[] ids = {android.R.id.text1,android.R.id.text2};
-                SimpleAdapter adapter = new SimpleAdapter(this,blogPosts,
-                        android.R.layout.simple_list_item_2,keys,ids);
-
-                getListView().setAdapter(adapter);
+//                String[] keys = {KEY_TITLE,KEY_AUTHOR};
+//                int[] ids = {android.R.id.text1,android.R.id.text2};
+//                SimpleAdapter adapter = new SimpleAdapter(this,blogPosts,
+//                        android.R.layout.simple_list_item_2,keys,ids);
+//
+//                getListView().setAdapter(adapter);
+                  FeedAdapter adapter = new FeedAdapter(this,title_author);
+                  getListView().setAdapter(adapter);
 
 
             } catch (JSONException e) {
