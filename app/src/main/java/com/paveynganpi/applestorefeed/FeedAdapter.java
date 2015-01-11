@@ -28,7 +28,7 @@ public class FeedAdapter extends ArrayAdapter{
         mContext = context;
         mTitle_authors = title_authors;
 
-
+        //hhhh
 
     }
 
