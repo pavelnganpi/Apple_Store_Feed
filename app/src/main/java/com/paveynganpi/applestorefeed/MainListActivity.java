@@ -38,7 +38,7 @@ public class MainListActivity extends ActionBarActivity {
     protected ListView mListView;//reference a listView
 
     protected static final String TAG = MainListActivity.class.getSimpleName();
-    protected static final int NUMBER_OF_POSTS = 20; // the top 15 posts of the news feed
+    protected static final int NUMBER_OF_POSTS = 40; // the top 15 posts of the news feed
     protected JSONObject mAppleFeedData;
     protected ProgressBar mProgressBar;
 
@@ -94,9 +94,13 @@ public class MainListActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 try {
-                    JSONArray jsonPosts = mAppleFeedData.getJSONArray("posts");
-                    JSONObject jsonPost = jsonPosts.getJSONObject(position);
-                    String appleFeedUrl = jsonPost.getString("url");
+                    JSONArray jsonPosts = mAppleFeedData.getJSONObject("feed").getJSONArray("entry");//get all the posts
+                    JSONObject post = jsonPosts.getJSONObject(position);
+                    //String appleFeedUrl = post.getString("url");
+
+                    JSONArray linkArray = post.getJSONArray("link");
+                    String appleFeedUrl = linkArray.getJSONObject(0).getJSONObject("attributes").getString("href");
+
 
                     Intent intent = new Intent(MainListActivity.this,AppleFeedWebViewActivity.class);
                     intent.setData(Uri.parse(appleFeedUrl));
@@ -136,13 +140,13 @@ public class MainListActivity extends ActionBarActivity {
             JSONObject jsonResponse = null;
 
             try {
-                URL appleFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
+                URL appleFeedUrl = new URL("https://itunes.apple.com/us/rss/topaudiobooks/limit=" + NUMBER_OF_POSTS +"/genre=50000041/json");
                 HttpURLConnection connection = (HttpURLConnection) appleFeedUrl.openConnection();
                 connection.connect();
 
 
                 responseCode = connection.getResponseCode();
-
+                Log.d(TAG,"status :"+responseCode);
                 //if responsecode is 200
                 if(responseCode == HttpURLConnection.HTTP_OK){
                     //success
@@ -151,8 +155,8 @@ public class MainListActivity extends ActionBarActivity {
 
                     //create a reader to read the data in the input stream
                     Reader reader = new InputStreamReader(inputStream);
-                   int contentLength = connection.getContentLength();//get the length of the data. /// bugy with this url
-                   // int contentLength = 10000;
+                   //int contentLength = connection.getContentLength();//get the length of the data. /// bugy with this url
+                    int contentLength = 100000;
                    // Log.d(TAG,"content length "+contentLength);
                    // int contentLength = 9000000;
                     //create a char array to store the data in it
@@ -203,7 +207,7 @@ public class MainListActivity extends ActionBarActivity {
         else{
 
             try {
-                JSONArray jsonPosts = mAppleFeedData.getJSONArray("entry");//get all the posts
+                JSONArray jsonPosts = mAppleFeedData.getJSONObject("feed").getJSONArray("entry");//get all the posts
                 //ArrayList<HashMap<String,String>> blogPosts = new ArrayList<HashMap<String,String>>();
                 ArrayList<feedData> title_author = new ArrayList<feedData>();
 
@@ -212,12 +216,16 @@ public class MainListActivity extends ActionBarActivity {
                 for(int i =0;i<jsonPosts.length();i++){
 
                     JSONObject post = jsonPosts.getJSONObject(i);
-                    String title = post.getString(KEY_TITLE);
-                    title = Html.fromHtml(title).toString();//convert html to strings
-                    String author = post.getString(KEY_AUTHOR);
-                    author = Html.fromHtml(author).toString();//convert html to strings
-                    String authorPhotoUrl = post.getString(KEY_THUMBNAIL);
+//                    String title = post.getString(KEY_TITLE);
+//                    title = Html.fromHtml(title).toString();//convert html to strings
+//                    String author = post.getString(KEY_AUTHOR);
+//                    author = Html.fromHtml(author).toString();//convert html to strings
+//                    String authorPhotoUrl = post.getString(KEY_THUMBNAIL);
 
+                    String author = post.getJSONObject("im:artist").getString("label");
+                    String title = post.getJSONObject("title").getString("label");
+                    JSONArray imageArray = post.getJSONArray("im:image");
+                    String authorPhotoUrl = imageArray.getJSONObject(0).getString("label");
 
 
                     title_author.add(new feedData(title,author,authorPhotoUrl));
