@@ -7,9 +7,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 
 public class AppleFeedWebViewActivity extends ActionBarActivity {
+
+    protected String mUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,8 +23,22 @@ public class AppleFeedWebViewActivity extends ActionBarActivity {
         Intent intent = getIntent();
         Uri appleFeedUri = intent.getData();
 
+
+
         WebView webView = (WebView)findViewById(R.id.webView);
-        webView.loadUrl(appleFeedUri.toString());
+
+
+        mUrl = appleFeedUri.toString();
+        webView.loadUrl(mUrl);
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
+            }
+        });
+
+
 
     }
 
@@ -41,10 +58,19 @@ public class AppleFeedWebViewActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_share) {
+            sharePost();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void sharePost() {
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT,mUrl);
+        startActivity(Intent.createChooser(shareIntent,getString(R.string.share_chooser_title)));
+
     }
 }

@@ -6,4 +6,12 @@
           android:title="@string/action_settings"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+
+    <item android:id="@+id/action_share"
+          app:showAsAction="always"
+          android:title="@string/action_share"
+          android:icon="@drawable/ic_action_share"
+          />
+
+
 </menu>
