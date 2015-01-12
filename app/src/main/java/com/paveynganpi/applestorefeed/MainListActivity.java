@@ -38,7 +38,7 @@ public class MainListActivity extends ActionBarActivity {
     protected ListView mListView;//reference a listView
 
     protected static final String TAG = MainListActivity.class.getSimpleName();
-    protected static final int NUMBER_OF_POSTS = 40; // the top 15 posts of the news feed
+    protected static final int NUMBER_OF_POSTS = 150; // the top 15 posts of the news feed
     protected JSONObject mAppleFeedData;
     protected ProgressBar mProgressBar;
 
@@ -77,6 +77,10 @@ public class MainListActivity extends ActionBarActivity {
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.VISIBLE);
+
+        getSupportActionBar().setLogo(R.drawable.ic_launcher);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         //if device is connected to a network, connect to the appleFeedUrl
         if(isAvailableNetwork()) {
@@ -146,7 +150,7 @@ public class MainListActivity extends ActionBarActivity {
 
 
                 responseCode = connection.getResponseCode();
-                Log.d(TAG,"status :"+responseCode);
+                //Log.d(TAG,"status :"+responseCode);
                 //if responsecode is 200
                 if(responseCode == HttpURLConnection.HTTP_OK){
                     //success
@@ -156,7 +160,7 @@ public class MainListActivity extends ActionBarActivity {
                     //create a reader to read the data in the input stream
                     Reader reader = new InputStreamReader(inputStream);
                    //int contentLength = connection.getContentLength();//get the length of the data. /// bugy with this url
-                    int contentLength = 100000;
+                    int contentLength = 1000000;
                    // Log.d(TAG,"content length "+contentLength);
                    // int contentLength = 9000000;
                     //create a char array to store the data in it
